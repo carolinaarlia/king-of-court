@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>King of the Court</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .container { max-width: 480px; margin: 0 auto; }
+
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 4px;
+      color: #fbbf24;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 24px;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+
+    input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 1.1rem;
+      outline: none;
+    }
+
+    input[type="number"]:focus, input[type="text"]:focus {
+      border-color: #fbbf24;
+    }
+
+    .error {
+      color: #f87171;
+      font-size: 0.8rem;
+      margin-top: 6px;
+      display: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #fbbf24;
+      color: #0f172a;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    button:active { background: #f59e0b; }
+
+    .add-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .add-row input { flex: 1; }
+
+    .add-row button {
+      width: auto;
+      padding: 12px 18px;
+      margin-top: 0;
+      font-size: 1.2rem;
+    }
+
+    .player-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .player-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #334155;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    .player-tag .remove {
+      cursor: pointer;
+      color: #f87171;
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .player-count {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 8px;
+    }
+
+    .results { margin-top: 24px; }
+
+    .round {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+      border-left: 3px solid #fbbf24;
+    }
+
+    .round-header {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #fbbf24;
+      margin-bottom: 10px;
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    .section-label:first-of-type { margin-top: 0; }
+
+    .court {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 0.9rem;
+      flex-wrap: wrap;
+    }
+
+    .court-badge {
+      background: #334155;
+      color: #fbbf24;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .vs { color: #64748b; font-size: 0.8rem; }
+
+    .pair {
+      background: #0f172a;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    .queue-list, .comodin-info {
+      font-size: 0.85rem;
+      padding: 4px 0;
+      line-height: 1.6;
+    }
+
+    .queue-item {
+      display: inline-block;
+      background: #0f172a;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin: 2px 4px 2px 0;
+      font-size: 0.85rem;
+    }
+
+    .comodin-info {
+      color: #fb923c;
+      font-weight: 600;
+    }
+
+    .summary {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+      border-left: 3px solid #94a3b8;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+
+    .back-btn {
+      background: #334155;
+      color: #e2e8f0;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .back-btn:active { background: #475569; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="setup">
+      <h1>King of the Court</h1>
+      <p class="subtitle">Organizador de rondas de beach volley</p>
+
+      <div class="input-group">
+        <label>Jugadores</label>
+        <div class="add-row">
+          <input type="text" id="name-input" placeholder="Nombre" autocomplete="off">
+          <button onclick="addPlayer()">+</button>
+        </div>
+        <div class="player-list" id="player-list"></div>
+        <div class="player-count" id="player-count"></div>
+        <div class="error" id="players-error"></div>
+      </div>
+
+      <div class="input-group">
+        <label for="courts">Cantidad de canchas</label>
+        <input type="number" id="courts" min="1" placeholder="Ej: 2">
+        <div class="error" id="courts-error"></div>
+      </div>
+
+      <button onclick="generate()">Generar rondas</button>
+    </div>
+
+    <div id="output" style="display:none;">
+      <button class="back-btn" onclick="goBack()">Volver</button>
+      <h1>King of the Court</h1>
+      <div class="summary" id="summary"></div>
+      <div class="results" id="results"></div>
+    </div>
+  </div>
+
+  <script>
+    let players = [];
+
+    const nameInput = document.getElementById('name-input');
+    nameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addPlayer();
+    });
+
+    function addPlayer() {
+      const name = nameInput.value.trim();
+      if (!name) return;
+      if (players.includes(name)) {
+        nameInput.value = '';
+        return;
+      }
+      players.push(name);
+      nameInput.value = '';
+      nameInput.focus();
+      renderPlayerList();
+    }
+
+    function removePlayer(idx) {
+      players.splice(idx, 1);
+      renderPlayerList();
+    }
+
+    function renderPlayerList() {
+      const list = document.getElementById('player-list');
+      const count = document.getElementById('player-count');
+      list.innerHTML = players.map((name, i) =>
+        `<span class="player-tag">${name}<span class="remove" onclick="removePlayer(${i})">&times;</span></span>`
+      ).join('');
+      count.textContent = players.length > 0 ? `${players.length} jugador${players.length !== 1 ? 'es' : ''}` : '';
+    }
+
+    function generate() {
+      const n = players.length;
+      const courts = parseInt(document.getElementById('courts').value);
+
+      let valid = true;
+      const pErr = document.getElementById('players-error');
+      const cErr = document.getElementById('courts-error');
+      pErr.style.display = 'none';
+      cErr.style.display = 'none';
+
+      if (n < 4) {
+        pErr.textContent = 'Mínimo 4 jugadores';
+        pErr.style.display = 'block';
+        valid = false;
+      }
+
+      if (!courts || courts < 1) {
+        cErr.textContent = 'Mínimo 1 cancha';
+        cErr.style.display = 'block';
+        valid = false;
+      }
+
+      if (!valid) return;
+
+      const isOdd = n % 2 !== 0;
+      const playingPerRound = isOdd ? n - 1 : n;
+      const pairsPerRound = playingPerRound / 2;
+      const minPairsForCourts = courts * 2;
+
+      if (pairsPerRound < minPairsForCourts) {
+        pErr.textContent = `Con ${n} jugadores solo se forman ${pairsPerRound} parejas por ronda. Necesitás al menos ${minPairsForCourts} parejas para ${courts} cancha(s).`;
+        pErr.style.display = 'block';
+        return;
+      }
+
+      const rounds = generateRounds(n);
+      renderResults(n, courts, rounds);
+    }
+
+    function generateRounds(n) {
+      const isOdd = n % 2 !== 0;
+      const total = isOdd ? n + 1 : n;
+      const numRounds = total - 1;
+      const ids = [];
+      for (let i = 0; i < total; i++) ids.push(i);
+
+      const rounds = [];
+      const fixed = ids[0];
+      let rotating = ids.slice(1);
+
+      for (let r = 0; r < numRounds; r++) {
+        const all = [fixed, ...rotating];
+        const pairs = [];
+        let comodin = null;
+
+        for (let i = 0; i < total / 2; i++) {
+          const a = all[i];
+          const b = all[total - 1 - i];
+
+          if (isOdd && (a === n || b === n)) {
+            comodin = a === n ? b : a;
+          } else {
+            pairs.push([a, b]);
+          }
+        }
+
+        rounds.push({ pairs, comodin });
+        rotating = [rotating[rotating.length - 1], ...rotating.slice(0, rotating.length - 1)];
+      }
+
+      return rounds;
+    }
+
+    function pName(idx) {
+      return players[idx];
+    }
+
+    function renderResults(n, courts, rounds) {
+      const isOdd = n % 2 !== 0;
+      const numRounds = rounds.length;
+
+      document.getElementById('setup').style.display = 'none';
+      document.getElementById('output').style.display = 'block';
+
+      const summary = document.getElementById('summary');
+      summary.innerHTML = `
+        <strong>${n} jugadores</strong> &middot; ${courts} cancha(s) &middot; ${numRounds} rondas<br>
+        ${isOdd ? 'N impar: 1 comodín rotativo por ronda' : 'Todos juegan cada ronda'}
+      `;
+
+      const results = document.getElementById('results');
+      results.innerHTML = '';
+
+      rounds.forEach((round, idx) => {
+        const div = document.createElement('div');
+        div.className = 'round';
+
+        let html = `<div class="round-header">Ronda ${idx + 1}</div>`;
+
+        if (round.comodin !== null) {
+          html += `<div class="section-label">Comodín</div>`;
+          html += `<div class="comodin-info">${pName(round.comodin)}</div>`;
+        }
+
+        const courtPairs = round.pairs.slice(0, courts * 2);
+        const queuePairs = round.pairs.slice(courts * 2);
+
+        html += `<div class="section-label">Canchas</div>`;
+        for (let c = 0; c < courts; c++) {
+          const p1 = courtPairs[c * 2];
+          const p2 = courtPairs[c * 2 + 1];
+          if (p1 && p2) {
+            html += `
+              <div class="court">
+                <span class="court-badge">Cancha ${c + 1}</span>
+                <span class="pair">${pName(p1[0])} & ${pName(p1[1])}</span>
+                <span class="vs">vs</span>
+                <span class="pair">${pName(p2[0])} & ${pName(p2[1])}</span>
+              </div>`;
+          }
+        }
+
+        if (queuePairs.length > 0) {
+          html += `<div class="section-label">Cola</div>`;
+          queuePairs.forEach((pair, i) => {
+            html += `<span class="queue-item">${i + 1}. ${pName(pair[0])} & ${pName(pair[1])}</span>`;
+          });
+        }
+
+        div.innerHTML = html;
+        results.appendChild(div);
+      });
+    }
+
+    function goBack() {
+      document.getElementById('setup').style.display = 'block';
+      document.getElementById('output').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
