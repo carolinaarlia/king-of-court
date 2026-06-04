@@ -434,7 +434,7 @@
           <path d="M8,70 Q35,50 50,50 Q65,50 92,30" fill="none" stroke="#d4a76a" stroke-width="2.5" stroke-linecap="round"/>
         </svg>
         <h1>King of the Court</h1>
-        <p class="subtitle">Organizador de rondas de beach volley</p>
+        <p class="subtitle">Esto es un todos contra todos</p>
       </div>
 
       <div class="input-group">
@@ -449,7 +449,7 @@
       </div>
 
       <div class="input-group">
-        <label for="courts">Cantidad de canchas</label>
+        <label for="courts">Cantidad de pistas</label>
         <input type="number" id="courts" min="1" placeholder="Ej: 2">
         <div class="error" id="courts-error"></div>
       </div>
@@ -536,7 +536,7 @@
       }
 
       if (!courts || courts < 1) {
-        cErr.textContent = 'Mínimo 1 cancha';
+        cErr.textContent = 'Mínimo 1 pista';
         cErr.style.display = 'block';
         valid = false;
       }
@@ -549,7 +549,7 @@
       const minPairsForCourts = courts * 2;
 
       if (pairsPerRound < minPairsForCourts) {
-        pErr.textContent = `Con ${n} jugadores solo se forman ${pairsPerRound} parejas por ronda. Necesitás al menos ${minPairsForCourts} parejas para ${courts} cancha(s).`;
+        pErr.textContent = `Con ${n} jugadores solo se forman ${pairsPerRound} parejas por ronda. Necesitás al menos ${minPairsForCourts} parejas para ${courts} pista(s).`;
         pErr.style.display = 'block';
         return;
       }
@@ -660,7 +660,7 @@
 
       const summary = document.getElementById('summary');
       summary.innerHTML = `
-        <strong>${n} jugadores</strong> &middot; ${courts} cancha(s) &middot; ${numRounds} rondas<br>
+        <strong>${n} jugadores</strong> &middot; ${courts} pista(s) &middot; ${numRounds} rondas<br>
         ${isOdd ? 'N impar: 1 comodín rotativo por ronda' : 'Todos juegan cada ronda'}
       `;
 
@@ -681,14 +681,14 @@
         const courtPairs = round.pairs.slice(0, courts * 2);
         const queuePairs = round.pairs.slice(courts * 2);
 
-        html += `<div class="section-label">Canchas</div>`;
+        html += `<div class="section-label">Pistas</div>`;
         for (let c = 0; c < courts; c++) {
           const p1 = courtPairs[c * 2];
           const p2 = courtPairs[c * 2 + 1];
           if (p1 && p2) {
             html += `
               <div class="court">
-                <span class="court-badge">Cancha ${c + 1}</span>
+                <span class="court-badge">Pista ${c + 1}</span>
                 <span class="pair">${pName(p1[0])} & ${pName(p1[1])}</span>
                 <span class="vs">vs</span>
                 <span class="pair">${pName(p2[0])} & ${pName(p2[1])}</span>
@@ -697,7 +697,7 @@
         }
 
         if (queuePairs.length > 0) {
-          html += `<div class="section-label">Cola</div>`;
+          html += `<div class="section-label">Fila</div>`;
           queuePairs.forEach((pair, i) => {
             html += `<span class="queue-item">${i + 1}. ${pName(pair[0])} & ${pName(pair[1])}</span>`;
           });
