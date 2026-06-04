@@ -302,6 +302,114 @@
       margin-top: 20px;
       overflow: hidden;
     }
+
+    /* Scoring */
+    .pair-score-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      gap: 8px;
+      border-bottom: 1px solid rgba(212, 184, 150, 0.25);
+    }
+
+    .pair-score-row:last-child { border-bottom: none; }
+
+    .pair-names {
+      flex: 1;
+      font-size: 0.85rem;
+      color: #6b5a3e;
+    }
+
+    .score-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .score-display {
+      min-width: 32px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #0c4a6e;
+    }
+
+    .score-btn {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      margin: 0;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #d4b896;
+      background: rgba(255, 255, 255, 0.7);
+      color: #8b6f47;
+      box-shadow: none;
+      line-height: 1;
+    }
+
+    .score-btn:active { background: #f5e6d3; }
+
+    .score-btn.minus {
+      color: #c47a5a;
+      border-color: #e0b8a0;
+    }
+
+    /* Ranking */
+    .ranking {
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      border-left: 4px solid #d4a76a;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+      backdrop-filter: blur(4px);
+    }
+
+    .ranking-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #0c4a6e;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .ranking-row {
+      display: flex;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(212, 184, 150, 0.2);
+      font-size: 0.85rem;
+    }
+
+    .ranking-row:last-child { border-bottom: none; }
+
+    .ranking-pos {
+      width: 28px;
+      font-weight: 700;
+      color: #d4a76a;
+      font-size: 0.9rem;
+    }
+
+    .ranking-pos.gold { color: #d4a017; }
+    .ranking-pos.silver { color: #94a3b8; }
+    .ranking-pos.bronze { color: #b87333; }
+
+    .ranking-name {
+      flex: 1;
+      color: #6b5a3e;
+    }
+
+    .ranking-pts {
+      font-weight: 700;
+      color: #0c4a6e;
+      min-width: 40px;
+      text-align: right;
+    }
   </style>
 </head>
 <body>
@@ -319,7 +427,6 @@
   <div class="container">
     <div id="setup">
       <div class="header">
-        <!-- Volleyball SVG -->
         <svg class="volleyball-icon" width="56" height="56" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r="46" fill="#fef9ee" stroke="#e8d5b7" stroke-width="3"/>
           <path d="M50,4 Q65,35 50,50 Q35,65 50,96" fill="none" stroke="#d4a76a" stroke-width="2.5" stroke-linecap="round"/>
@@ -361,6 +468,7 @@
         </svg>
         <h1>King of the Court</h1>
       </div>
+      <div id="ranking" class="ranking" style="display:none;"></div>
       <div class="summary" id="summary"></div>
       <div class="results" id="results"></div>
     </div>
@@ -375,6 +483,9 @@
 
   <script>
     let players = [];
+    let scores = {};   // scores[roundIdx][pairIdx] = number
+    let roundsData = [];
+    let numCourts = 0;
 
     const nameInput = document.getElementById('name-input');
     nameInput.addEventListener('keydown', (e) => {
@@ -443,8 +554,17 @@
         return;
       }
 
-      const rounds = generateRounds(n);
-      renderResults(n, courts, rounds);
+      numCourts = courts;
+      roundsData = generateRounds(n);
+
+      // Init scores
+      scores = {};
+      roundsData.forEach((round, ri) => {
+        scores[ri] = {};
+        round.pairs.forEach((_, pi) => { scores[ri][pi] = 0; });
+      });
+
+      renderResults(n, courts, roundsData);
     }
 
     function generateRounds(n) {
@@ -483,6 +603,52 @@
 
     function pName(idx) {
       return players[idx];
+    }
+
+    function addScore(roundIdx, pairIdx, delta) {
+      scores[roundIdx][pairIdx] = Math.max(0, scores[roundIdx][pairIdx] + delta);
+      document.getElementById(`score-${roundIdx}-${pairIdx}`).textContent = scores[roundIdx][pairIdx];
+      updateRanking();
+    }
+
+    function updateRanking() {
+      const totals = {};
+      players.forEach((_, i) => { totals[i] = 0; });
+
+      roundsData.forEach((round, ri) => {
+        round.pairs.forEach((pair, pi) => {
+          const pts = scores[ri][pi] || 0;
+          totals[pair[0]] += pts;
+          totals[pair[1]] += pts;
+        });
+      });
+
+      const sorted = Object.keys(totals)
+        .map(i => ({ idx: parseInt(i), pts: totals[i] }))
+        .sort((a, b) => b.pts - a.pts);
+
+      const hasPoints = sorted.some(s => s.pts > 0);
+      const rankingEl = document.getElementById('ranking');
+
+      if (!hasPoints) {
+        rankingEl.style.display = 'none';
+        return;
+      }
+
+      rankingEl.style.display = 'block';
+      let html = '<div class="ranking-title">Ranking</div>';
+
+      sorted.forEach((s, i) => {
+        const posClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+        html += `
+          <div class="ranking-row">
+            <span class="ranking-pos ${posClass}">${i + 1}</span>
+            <span class="ranking-name">${pName(s.idx)}</span>
+            <span class="ranking-pts">${s.pts} pts</span>
+          </div>`;
+      });
+
+      rankingEl.innerHTML = html;
     }
 
     function renderResults(n, courts, rounds) {
@@ -537,14 +703,31 @@
           });
         }
 
+        // Scoring section
+        html += `<div class="section-label">Puntos</div>`;
+        round.pairs.forEach((pair, pi) => {
+          html += `
+            <div class="pair-score-row">
+              <span class="pair-names">${pName(pair[0])} & ${pName(pair[1])}</span>
+              <div class="score-controls">
+                <button class="score-btn minus" onclick="addScore(${idx},${pi},-1)">&minus;</button>
+                <span class="score-display" id="score-${idx}-${pi}">0</span>
+                <button class="score-btn" onclick="addScore(${idx},${pi},1)">+</button>
+              </div>
+            </div>`;
+        });
+
         div.innerHTML = html;
         results.appendChild(div);
       });
+
+      document.getElementById('ranking').style.display = 'none';
     }
 
     function goBack() {
       document.getElementById('setup').style.display = 'block';
       document.getElementById('output').style.display = 'none';
+      document.getElementById('ranking').style.display = 'none';
     }
   </script>
 </body>
